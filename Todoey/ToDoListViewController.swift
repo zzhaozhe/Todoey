@@ -12,8 +12,14 @@ class ToDoListViewController: UITableViewController {
 
     var itemArray = ["Oops"]
     
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = (defaults.array(forKey: "TodoListArray") as? [String]) {
+            itemArray = items
+        }
         
     }
     
@@ -33,9 +39,6 @@ class ToDoListViewController: UITableViewController {
     
     //MARK - Tableview Delegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //print(itemArray[indexPath.row])
-        
-        tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         
         if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
             
@@ -61,6 +64,8 @@ class ToDoListViewController: UITableViewController {
             
             //what will happen once the button pressed
             self.itemArray.append(textField.text!)
+            
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
             self.tableView.reloadData()
         }
