@@ -7,17 +7,18 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController {
 
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        if let items = (defaults.array(forKey: "TodoListArray") as? [Item]) {
-//            itemArray = items
-//        }
+        
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+
         
         loadItems()
         
@@ -65,8 +66,9 @@ class ToDoListViewController: UITableViewController {
             
             //what will happen once the button pressed
             
-            let newItem = Item()
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
             
             self.itemArray.append(newItem)
             
@@ -88,16 +90,14 @@ class ToDoListViewController: UITableViewController {
     //MARK - Model Manipulation Methods
     
     func saveItems() {
-        let encoder = PropertyListEncoder()
         
         do{
             
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
             
         } catch {
             
-            print("Error \(error)")
+            print("Error: \(error)")
             
         }
         
@@ -106,15 +106,12 @@ class ToDoListViewController: UITableViewController {
     }
     
     func loadItems() {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            
-            do{
-                itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error \(error)")
-            }
+        do{
+            itemArray = try context.fetch(request)
+        } catch {
+            print("Error : \(error)")
         }
         
     }
